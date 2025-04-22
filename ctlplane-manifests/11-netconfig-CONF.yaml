@@ -36,12 +36,12 @@ spec:
     subnets:
     - name: subnet1
       allocationRanges:
-      - end: 10.37.141.18
-        start: 10.37.141.12
-      - end: 10.37.143.120
-        start: 10.37.143.100
-      cidr: 10.37.136.0/21
-      gateway: 10.37.143.254
+      - end: 10.0.0.100
+        start: 10.0.0.50
+      - end: 10.0.0.200
+        start: 10.0.0.150
+      cidr: 10.0.0.0/24
+      gateway: 10.0.0.254
   - name: Storage
     dnsDomain: storage.example.com
     subnets:
