@@ -1,0 +1,6 @@
+# https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/deploying_red_hat_openstack_services_on_openshift/assembly_preparing-rhocp-for-rhoso#proc_creating-the-openstack-namespace_preparing
+apiVersion: operator.openstack.org/v1beta1
+kind: OpenStack
+metadata:
+  name: openstack
+  namespace: openstack-operators

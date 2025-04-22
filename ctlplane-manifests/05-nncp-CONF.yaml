@@ -1,0 +1,80 @@
+# https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/deploying_red_hat_openstack_services_on_openshift/assembly_preparing-RHOSO-networks_preparing#proc_preparing-RHOCP-with-isolated-network-interfaces_preparing_networks
+apiVersion: nmstate.io/v1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  labels:
+    osp/nncm-config-type: standard
+  name: sno-openstack-networking
+  namespace: openstack
+spec:
+  desiredState:
+    interfaces:
+    # VLAN based interfaces EXAMPLE
+    - description: internalapi vlan interface
+      ipv4:
+        address:
+        - ip: 172.17.0.10
+          prefix-length: 24
+        enabled: true
+        dhcp: false
+      ipv6:
+        enabled: false
+      name: internalapi
+      state: up
+      type: vlan
+      vlan:
+        base-iface: eno12409
+        id: 4001
+        reorder-headers: true
+
+    - description: storage vlan interface
+      ipv4:
+        address:
+        - ip: 172.18.0.10
+          prefix-length: 24
+        enabled: true
+        dhcp: false
+      ipv6:
+        enabled: false
+      name: storage
+      state: up
+      type: vlan
+      vlan:
+        base-iface: eno12409
+        id: 4002
+        reorder-headers: true
+
+    - description: tenant vlan interface
+      ipv4:
+        address:
+        - ip: 172.19.0.10
+          prefix-length: 24
+        enabled: true
+        dhcp: false
+      ipv6:
+        enabled: false
+      name: tenant
+      state: up
+      type: vlan
+      vlan:
+        base-iface: eno12409
+        id: 4003
+        reorder-headers: true
+
+    # ethernet based interfaces EXAMPLE
+    - description: Configuring eno12409
+      ipv4:
+        address:
+        - ip: 192.168.122.10
+          prefix-length: 24
+        enabled: true
+        dhcp: false
+      ipv6:
+        enabled: false
+      mtu: 1500 
+      name: eno12409
+      state: up
+      type: ethernet
+  nodeSelector:
+    kubernetes.io/hostname: ocp-sno.example.com # name of the OCP host for which this file apply 
+    node-role.kubernetes.io/worker: ""

@@ -1,0 +1,5 @@
+# https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/planning_your_deployment/assembly_infrastructure-and-system-requirements#ref_RHOCP-hardware-requirements_planning
+apiVersion: nmstate.io/v1
+kind: NMState
+metadata:
+  name: nmstate
