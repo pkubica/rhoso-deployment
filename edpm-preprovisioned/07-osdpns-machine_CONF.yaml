@@ -130,7 +130,7 @@ spec:
       #   name: edpm-compute-0-user-data
       #   namespace: openstack
       ansible:
-        ansibleHost: # external IP / FQDN
+        ansibleHost: # external IP / FQDN #CONFIGURE
         ansibleUser: cloud-admin
         ansibleVars: 
           fqdn_internal_api: machine01.example.com
