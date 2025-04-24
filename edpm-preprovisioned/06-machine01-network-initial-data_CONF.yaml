@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: machine01-network-initial-data
+  namespace: openstack
+# Should be a yaml equivalent of a json object that follows the format definition that can be found here: https://docs.openstack.org/nova/latest/_downloads/9119ca7ac90aa2990e762c08baea3a36/network_data.json
+# Examples:
+# - https://github.com/openstack/nova/blob/master/doc/source/user/metadata.rst
+# - https://book.metal3.io/bmo/instance_customization#networkdata
+# Once the bmh has been created and is available we can see the network information with:
+#      oc -n openstack get hardwaredata machine01 -o jsonpath='{.spec.hardware.nics}' | jq .
+stringData:
+  networkData: |
+    links:
+      - id: ens1f0
+        type: phy
+        ethernet_mac_address: aa:bb:cc:dd:ee:f0
+      - id: ens1f1
+        type: phy
+        ethernet_mac_address: aa:bb:cc:dd:ee:f1
+    networks:
+      - id: ens1f0
+        link: ens1f0
+        type: ipv4_dhcp
+      - id: ens1f1
+        link: ens1f1
+        type: ipv4
+        ip_address: 192.168.122.102
+        netmask: 255.255.255.0
+    services:
+      - type: dns
+        address: 192.168.122.80

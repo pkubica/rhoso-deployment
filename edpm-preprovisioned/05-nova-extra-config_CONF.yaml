@@ -1,0 +1,27 @@
+# NON HIVED VERSION
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nova-extra-config
+  namespace: openstack
+data:
+  # NON HIVED VERSION
+  25-nova-gpu.conf: |
+    [pci]
+    device_spec = {"vendor_id": "1002", "product_id": "74b5"}
+    alias = {"vendor_id":"1002", "product_id":"74b5", "device_type":"type-VF", "name":"mi300-single-vf"}
+
+  # HIVED VERSION
+  # 25-nova-gpu.conf: |
+  #   [pci]
+  #   report_in_placement=True
+  #   device_spec = {"address": "0000:82:02.0", "resource_class":"CUSTOM_GPU_GROUP_1"}
+  #   device_spec = {"address": "0000:83:02.0", "resource_class":"CUSTOM_GPU_GROUP_1"}
+  #   device_spec = {"address": "0000:84:02.0", "resource_class":"CUSTOM_GPU_GROUP_1"}
+  #   device_spec = {"address": "0000:85:02.0", "resource_class":"CUSTOM_GPU_GROUP_1"}
+  #   device_spec = {"address": "0000:86:02.0", "resource_class":"CUSTOM_GPU_GROUP_2"}
+  #   device_spec = {"address": "0000:87:02.0", "resource_class":"CUSTOM_GPU_GROUP_2"}
+  #   device_spec = {"address": "0000:88:02.0", "resource_class":"CUSTOM_GPU_GROUP_2"}
+  #   device_spec = {"address": "0000:89:02.0", "resource_class":"CUSTOM_GPU_GROUP_2"}
+  #   alias = {"name": "GPU_GROUP_1", "device_type": "type-VF", "numa_policy": "prefered", "resource_class": "CUSTOM_GPU_GROUP_1"}
+  #   alias = {"name": "GPU_GROUP_2", "device_type": "type-VF", "numa_policy": "prefered", "resource_class": "CUSTOM_GPU_GROUP_2"}

@@ -1,0 +1,9 @@
+# [Step 5.6](https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/deploying_red_hat_openstack_services_on_openshift/assembly_creating-the-data-plane#proc_deploying-the-data-plane_dataplane)
+apiVersion: dataplane.openstack.org/v1beta1
+kind: OpenStackDataPlaneDeployment
+metadata:
+  name: initial-deployment
+  namespace: openstack
+spec:
+  nodeSets:
+  - devins

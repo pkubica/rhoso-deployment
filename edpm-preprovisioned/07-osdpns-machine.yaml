@@ -1,0 +1,138 @@
+# [Step 5.4.2](https://docs.redhat.com/en/documentation/red_hat_openstack_services_on_openshift/18.0/html/deploying_red_hat_openstack_services_on_openshift/assembly_creating-the-data-plane#proc_creating-an-OpenStackDataPlaneNodeSet-CR-with-unprovisioned-nodes_dataplane)
+apiVersion: dataplane.openstack.org/v1beta1
+kind: OpenStackDataPlaneNodeSet
+metadata:
+  name: machine
+  namespace: openstack
+spec:
+  env:
+    - name: ANSIBLE_FORCE_COLOR
+      value: "True"
+spec:
+  networkAttachments:
+    - ctlplane
+  preProvisioned: true
+  nodeTemplate:
+    ansibleSSHPrivateKeySecret: dataplane-ansible-ssh-private-key-secret
+    extraMounts:
+      - extraVolType: Logs
+        volumes:
+        - name: ansible-logs
+          persistentVolumeClaim:
+            claimName: #<pvc_name> #CONFIGURE
+        mounts:
+        - name: ansible-logs
+          mountPath: "/runner/artifacts"
+    managementNetwork: ctlplane
+    ansible:
+      ansibleUser: cloud-admin # CONFIGURE THAT USER ON EDPM HOST - sudoless user, put all generated pubkeys into $HOME:/.ssh/authorized_keys
+      ansiblePort: 22
+      ansibleVarsFrom:
+        - secretRef:
+            name: subscription-manager
+        - secretRef:
+            name: redhat-registry
+      ansibleVars:
+        edpm_nodes_validation_validate_gateway_icmp: false
+        edpm_reboot_strategy: auto  ## Set to force to always reboot on `reboot-os`
+        edpm_kernel_sysctl_extra_settings:
+          net.ipv6.conf.ens1f0.disable_ipv6:
+            value: 1
+          net.ipv6.conf.ens1f1.disable_ipv6:
+            value: 1
+          net.ipv6.conf.all.disable_ipv6:
+            value: 1
+          net.ipv6.conf.default.disable_ipv6:
+            value: 1
+          net.ipv6.conf.lo.disable_ipv6:
+            value: 1
+        rhc_release: 9.4
+        rhc_repositories:
+            - {name: "*", state: disabled}
+            - {name: "rhel-9-for-x86_64-baseos-eus-rpms", state: enabled}
+            - {name: "rhel-9-for-x86_64-appstream-eus-rpms", state: enabled}
+            - {name: "rhel-9-for-x86_64-highavailability-eus-rpms", state: enabled}
+            - {name: "fast-datapath-for-rhel-9-x86_64-rpms", state: enabled}
+            - {name: "rhoso-18.0-for-rhel-9-x86_64-rpms", state: enabled}
+            - {name: "rhceph-7-tools-for-rhel-9-x86_64-rpms", state: enabled}
+        edpm_bootstrap_release_version_package: []
+        edpm_network_config_os_net_config_mappings:
+          edpm-compute-0:
+            nic1: 52:54:04:60:55:22 #CONFIGURE
+        edpm_ovn_bridge_mappings: ["datacentre:br-ex", "internet:br-internet"]
+        neutron_physical_bridge_name: br-ex
+        neutron_public_interface_name: ens1f0 #CONFIGURE
+        edpm_network_config_nmstate: true
+        edpm_network_config_update: true
+        edpm_network_config_template: |
+          ---
+          {% set mtu_list = [ctlplane_mtu] %}
+          {% for network in nodeset_networks %}
+          {{ mtu_list.append(lookup('vars', networks_lower[network] ~ '_mtu')) }}
+          {%- endfor %}
+          {% set min_viable_mtu = mtu_list | max %}
+          network_config:
+          - type: ovs_bridge
+            name: br-internet
+            mtu: {{ min_viable_mtu }}
+            use_dhcp: true
+            routes: {{ ctlplane_host_routes }}
+            members:
+            - type: interface
+              name: ens1f0 #CONFIGURE
+              mtu: {{ min_viable_mtu }}
+              primary: true
+          - type: ovs_bridge
+            name: {{ neutron_physical_bridge_name }}
+            mtu: {{ min_viable_mtu }}
+            use_dhcp: false
+            dns_servers: {{ ctlplane_dns_nameservers }}
+            domain: {{ dns_search_domains }}
+            addresses:
+            - ip_netmask: {{ ctlplane_ip }}/{{ ctlplane_cidr }}
+            routes: {{ ctlplane_host_routes }}
+            members:
+            - type: interface
+              name: ens1f1 #CONFIGURE
+              mtu: {{ min_viable_mtu }}
+              primary: true
+          {% for network in nodeset_networks %}
+          {% if network != 'external' %}
+            - type: vlan
+              mtu: {{ lookup('vars', networks_lower[network] ~ '_mtu') }}
+              vlan_id: {{ lookup('vars', networks_lower[network] ~ '_vlan_id') }}
+              addresses:
+              - ip_netmask:
+                  {{ lookup('vars', networks_lower[network] ~ '_ip') }}/{{ lookup('vars', networks_lower[network] ~ '_cidr') }}
+              routes: {{ lookup('vars', networks_lower[network] ~ '_host_routes') }}
+          {% endif %}
+          {% endfor %}
+  nodes:
+    machine01: 
+      hostName: # hostname of the compute host resolvable by DNS
+      networks:
+      - name: external
+        subnetName: subnet1
+        defaultRoute: true 
+      - name: ctlplane
+        subnetName: subnet1
+        fixedIP: 192.168.122.102 
+      - name: internalapi
+        subnetName: subnet1
+      - name: storage
+        subnetName: subnet1
+      - name: tenant
+        subnetName: subnet1
+      networkData: 
+        name: machine01-initial-network-data
+        namespace: openstack
+      # userData: 
+      #   name: edpm-compute-0-user-data
+      #   namespace: openstack
+      ansible:
+        ansibleHost: # external IP / FQDN
+        ansibleUser: cloud-admin
+        ansibleVars: 
+          fqdn_internal_api: machine01.example.com
+      bmhLabelSelector: 
+        nodeName: machine01
